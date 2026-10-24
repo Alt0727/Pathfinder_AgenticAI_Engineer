@@ -1,0 +1,19 @@
+{
+  "name": "listener",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node --env-file=.env src/index.js",
+    "eval": "node --env-file=.env eval/run.js",
+    "check": "node src/privacy/check.js"
+  },
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^2.31.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "baileys": "^7.0.0-rc14",
+    "pino": "^10.4.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
