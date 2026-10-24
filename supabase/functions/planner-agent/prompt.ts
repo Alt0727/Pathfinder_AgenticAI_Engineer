@@ -5,7 +5,7 @@ import type { Mode } from './tools/index.ts'
 const MODE_RULES: Record<Mode, string> = {
   auto: `Mode: AUTO (you started this run yourself). Timetable classes and entries the user placed (placed_by "user") are FIXED: you cannot move or remove them. If an event that fits the user clashes with one, do NOT skip it: end with ask_user, e.g. "HackX (Sat 10 am) clashes with Gym. Move Gym this week?" with options like "Yes, move Gym to Sunday", "Skip HackX", "I'll decide later". Plan everything else first, then ask. Never work around a clash silently. Options must not name a new time for a class (you cannot know it is free): offer e.g. "Move <class> this week", "Skip <event>", "I'll decide later". If the user picks the move, the next run finds a free time with check_clash.`,
   user: `Mode: USER (the user asked for this). Do what the user asked or answered, and only that: do not add other cards they did not mention (the feed cards are context, not a to-do list).
-If the user chose to move a class: find its new time YOURSELF, do not ask them to confirm a time. Step 1: check_clash a candidate for the class's FULL length on that day; the result's free_times_same_day lists real free starts. Step 2: override_slot (action move) to one of them, keeping the class's length. Step 3: add_entry the event at its card time. Never guess a time without check_clash. You may move or remove any of their entries. Timetable changes are for ONE date only (override_slot); for permanent changes, tell the user to edit their timetable.`,
+If the user chose to move a class: find its new time YOURSELF, do not ask them to confirm a time. Step 1: check_clash a candidate for the class's FULL length on that day, with for_card_id = the event's card; the result's free_times_same_day lists real free starts (the event's time already counted as busy). Step 2: override_slot (action move, for_card_id = the event's card) to one of them, keeping the class's length. Step 3: add_entry the event at its card time. Never guess a time without check_clash. You may move or remove any of their entries. Timetable changes are for ONE date only (override_slot); for permanent changes, tell the user to edit their timetable.`,
 }
 
 export function systemPrompt(mode: Mode, interests: string[]): string {
@@ -37,7 +37,10 @@ export function triggerLine(trigger: string, payload: Record<string, unknown>, w
   switch (trigger) {
     case 'new_card': return 'New card(s) below. Decide if they fit this user; if yes, plan them.'
     case 'card_changed': return 'These cards changed (old → new) or were cancelled. Fix the linked entries.'
-    case 'plan_week': return `Plan the next 7 days (${week.from} → ${week.to}) using the feed cards below.`
+    case 'plan_week': return `Plan the next 7 days (${week.from} → ${week.to}) using the feed cards below. ${
+      payload.style === 'career'
+        ? 'Style: CAREER: put placement, internship and opportunity cards and their deadlines first; other things only if the week stays light.'
+        : 'Style: BALANCED: a calm week, at most 2 new items a day, spread across the user\'s interests.'}`
     case 'chat': return `User says: ${String(payload.text ?? '')}`
     case 'answer': return `User answered '${String(payload.question ?? '')}': ${String(payload.answer ?? '')}.`
     default: return 'Review the plan.'

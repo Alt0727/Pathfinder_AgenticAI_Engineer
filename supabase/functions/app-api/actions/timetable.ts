@@ -25,8 +25,8 @@ const SCHEMA = {
         type: 'object',
         properties: {
           day_of_week: { type: 'integer' },
-          start_time: { type: 'string' },
-          end_time: { type: 'string' },
+          start_time: { type: 'string', description: '24-hour HH:MM with two digits, e.g. 08:00, 14:30' },
+          end_time: { type: 'string', description: '24-hour HH:MM with two digits, e.g. 09:55, 16:45' },
           label: { type: 'string' },
           kind: { type: 'string', enum: ['class'] },
         },

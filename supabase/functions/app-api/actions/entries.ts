@@ -91,4 +91,58 @@ async function remove(p: Record<string, unknown>, ctx: { userId: string }) {
   return { ok: true }
 }
 
-export const entryActions = { 'entry.add': add, 'entry.move': move, 'entry.delete': remove }
+// week.add { card_id } → the UI's "Add to my week": card_actions 'added' + one user entry for the card.
+// Event / timed announcement → at the card's time. Deadline / opportunity → a 30-min "Register for X"
+// ending at the deadline. Clashes come back as a warning (like entry.add). Adding twice is a no-op.
+async function weekAdd(p: Record<string, unknown>, ctx: { userId: string }) {
+  const cardId = String(p.card_id ?? '')
+  if (!UUID.test(cardId)) return { ok: false, error: 'invalid card_id' }
+  const { data: card } = await db.from('cards')
+    .select('id, type, title, tags, starts_at, ends_at, deadline_at, status').eq('id', cardId).maybeSingle()
+  if (!card) return { ok: false, error: 'card not found' }
+  if (card.status === 'cancelled') return { ok: false, error: 'this was cancelled' }
+
+  const { data: existing } = await db.from('plan_entries').select('id')
+    .eq('user_id', ctx.userId).eq('card_id', cardId).eq('status', 'planned').limit(1)
+  if (existing?.length) return { ok: true, entry_id: existing[0].id, conflicts: [] }
+
+  let title = card.title, startsAt: string, endsAt: string, estimated = false
+  if (card.starts_at) {
+    startsAt = card.starts_at
+    estimated = !card.ends_at
+    endsAt = card.ends_at ?? defaultEnd({ starts_at: startsAt, title, tags: card.tags })
+  } else if (card.deadline_at) {
+    title = `Register for ${card.title}`
+    endsAt = card.deadline_at
+    startsAt = new Date(Date.parse(endsAt) - 30 * 60_000).toISOString()
+  } else {
+    return { ok: false, error: 'this has no date to put in your week' }
+  }
+  if (Date.parse(endsAt) <= Date.now()) return { ok: false, error: 'this has already passed' }
+
+  await db.from('card_actions').upsert(
+    { user_id: ctx.userId, card_id: cardId, action: 'added', created_at: new Date().toISOString() },
+    { onConflict: 'user_id,card_id' },
+  )
+  const { data, error } = await db.from('plan_entries').insert({
+    user_id: ctx.userId, card_id: cardId, title, starts_at: startsAt, ends_at: endsAt,
+    end_estimated: estimated, placed_by: 'user',
+  }).select('id').single()
+  if (error) throw error
+  return { ok: true, entry_id: data.id, conflicts: await clashes(ctx.userId, startsAt, endsAt, data.id) }
+}
+
+// week.remove { card_id } → cancel this user's planned entries for the card (agent's too) + forget 'added'.
+async function weekRemove(p: Record<string, unknown>, ctx: { userId: string }) {
+  const cardId = String(p.card_id ?? '')
+  if (!UUID.test(cardId)) return { ok: false, error: 'invalid card_id' }
+  const { data, error } = await db.from('plan_entries').update({ status: 'cancelled' })
+    .eq('user_id', ctx.userId).eq('card_id', cardId).eq('status', 'planned').select('id')
+  if (error) throw error
+  await db.from('card_actions').delete().eq('user_id', ctx.userId).eq('card_id', cardId).eq('action', 'added')
+  return { ok: true, removed: data.length }
+}
+
+export const entryActions = {
+  'entry.add': add, 'entry.move': move, 'entry.delete': remove, 'week.add': weekAdd, 'week.remove': weekRemove,
+}

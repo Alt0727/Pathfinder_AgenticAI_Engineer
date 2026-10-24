@@ -27,9 +27,10 @@ async function startRun(userId: string, trigger: string, payload: Record<string,
   return { ok: true, run_id: reply.run_id }
 }
 
-// plan.week → "Plan my next 7 days" (auto mode)
-function planWeek(_p: Record<string, unknown>, ctx: { userId: string }) {
-  return startRun(ctx.userId, 'plan_week', weekRange())
+// plan.week { style? } → "Plan my next 7 days" (auto mode). style: 'balanced' | 'career' (a hint for the agent).
+function planWeek(p: Record<string, unknown>, ctx: { userId: string }) {
+  const style = p.style === 'career' ? 'career' : 'balanced'
+  return startRun(ctx.userId, 'plan_week', { ...weekRange(), style })
 }
 
 // chat.send { text } → user-mode run. A message typed while a question is pending counts as its answer.

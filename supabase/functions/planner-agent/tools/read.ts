@@ -48,7 +48,7 @@ export async function clashes(userId: string, startsAt: string, endsAt: string, 
 // Free start times on one IST date for something `minutes` long, computed from the real week (not guessed
 // by the model): the first fitting start in each gap, between 08:00 and 21:00, respecting the user's
 // avoid_before / avoid_after and never in the past. Up to 4. Returned with every clash.
-export async function freeTimes(userId: string, date: string, minutes: number) {
+export async function freeTimes(userId: string, date: string, minutes: number, extraBusy: [number, number][] = []) {
   const [items, prefs] = await Promise.all([
     weekItems(userId, date, date),
     db.from('user_preferences').select('key, value').eq('user_id', userId).in('key', ['avoid_after', 'avoid_before']),
@@ -60,7 +60,8 @@ export async function freeTimes(userId: string, date: string, minutes: number) {
   const dayEnd = valid(pref.avoid_after) ? Math.min(at('21:00'), at(pref.avoid_after)) : at('21:00')
   let t = Math.max(valid(pref.avoid_before) ? at(pref.avoid_before) : at('08:00'), at('08:00'))
   if (t < Date.now()) t = Math.ceil(Date.now() / step) * step
-  const busy = items.map((i: { starts_at: string | null; ends_at: string | null }) => [Date.parse(i.starts_at!), Date.parse(i.ends_at!)])
+  // extraBusy: e.g. the event a class is being moved for (not in the plan yet, but the class must not land on it)
+  const busy = [...items.map((i: { starts_at: string | null; ends_at: string | null }) => [Date.parse(i.starts_at!), Date.parse(i.ends_at!)]), ...extraBusy]
 
   const out: string[] = []
   while (t + len <= dayEnd && out.length < 4) {
@@ -146,6 +147,7 @@ export const readTools: Tool[] = [
           ends_at: { type: 'string', description: 'ISO time with +05:30 (optional)' },
           card_id: { type: 'string', description: 'the card this is for (optional; sets the default length)' },
           title: { type: 'string', description: 'the entry you plan to add (optional; "Register for X" tasks are 30 min)' },
+          for_card_id: { type: 'string', description: 'when moving a class to make room for an event: that event\'s card (its time counts as busy)' },
         },
         required: ['starts_at'],
       },
@@ -158,11 +160,19 @@ export const readTools: Tool[] = [
       const endsAt = eventEnd(card, args.starts_at, card?.title ?? '')?.endsAt ??
         (args.ends_at as string) ?? defaultEnd({ starts_at: args.starts_at, title: text(args.title), tags: card?.tags ?? [] })
       const conflicts = await clashes(ctx.userId, args.starts_at, endsAt)
+      // The event a class is being moved for isn't in the plan yet, but the class must not land on it.
+      const forCard = args.for_card_id ? await cardInfo(args.for_card_id) : null
+      const event: [number, number][] = forCard?.starts_at
+        ? [[Date.parse(forCard.starts_at), Date.parse(forCard.ends_at ?? defaultEnd({ starts_at: forCard.starts_at, tags: forCard.tags }))]]
+        : []
+      if (event.some(([s, e]) => s < Date.parse(endsAt) && Date.parse(args.starts_at as string) < e)) {
+        conflicts.push({ source: 'event', id: args.for_card_id, title: `${forCard!.title} (the event you are making room for)`, placed_by: null, starts_at: toIST(forCard!.starts_at), ends_at: toIST(new Date(event[0][1]).toISOString()) })
+      }
       await noteFixedClash(ctx, args.starts_at, conflicts)
       if (!conflicts.length) return { ok: true, clear: true, ends_at: toIST(endsAt), conflicts }
       // Not free: give real free times that day for the same length (only useful for flexible items).
       const minutes = Math.round((Date.parse(endsAt) - Date.parse(args.starts_at)) / 60_000)
-      const free_times = await freeTimes(ctx.userId, toIST(args.starts_at)!.slice(0, 10), minutes)
+      const free_times = await freeTimes(ctx.userId, toIST(args.starts_at)!.slice(0, 10), minutes, event)
       return { ok: true, clear: false, ends_at: toIST(endsAt), conflicts, free_times_same_day: free_times }
     },
   },
