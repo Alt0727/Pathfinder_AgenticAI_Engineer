@@ -1,0 +1,75 @@
+/*
+  tokens.css
+  Every unmute colour, font and radius, from the UI spec (mockup B).
+  index.css maps these to Tailwind classes (bg-surface, text-signal, border-line-2…)
+  and to shadcn's variables, so changing a value here restyles the whole app.
+*/
+:root {
+  color-scheme: dark;
+
+  /* surfaces */
+  --bg: #0d1210; /* page */
+  --bg-deep: #090d0b; /* header, inputs, recessed areas */
+  --surface: #141a17; /* panels and cards */
+  --surface-2: #1d2521; /* raised / selected */
+  --forest: #1b3d31; /* featured surfaces */
+  --forest-2: #24503f;
+  --line: rgba(220, 235, 225, 0.08);
+  --line-2: rgba(220, 235, 225, 0.15);
+
+  /* text */
+  --text: #f3efe6; /* bone */
+  --text-2: #cdd3cc;
+  --muted: #8e9a91;
+
+  /* accents */
+  --sage: #bcc9be; /* primary buttons */
+  --sage-hover: #cfdacf;
+  --sage-ink: #10261d;
+  --teal: #4fc9b4; /* network, route, selection, focus */
+  --signal: #f28a3c; /* new + urgent only */
+  --signal-ink: #1e0d02;
+  --signal-soft: rgba(242, 138, 60, 0.12);
+  --signal-line: rgba(242, 138, 60, 0.45);
+
+  /* the four lines (pillars): fill / letter ink */
+  --line-e: #4fc9b4; /* Events */
+  --line-e-ink: #06221c;
+  --line-o: #a84854; /* Opportunities */
+  --line-o-ink: #fff1f2;
+  --line-a: #bcc9be; /* Announcements */
+  --line-a-ink: #10261d;
+  --line-d: #f28a3c; /* Deadlines */
+  --line-d-ink: #1e0d02;
+
+  /* type */
+  --font-head: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --font-ui: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-brand: "Space Grotesk", system-ui, sans-serif; /* wordmark only */
+
+  --radius-btn: 4px;
+  --radius-card: 6px;
+  --radius-panel: 8px;
+  --radius-feature: 10px;
+
+  /* shadcn variables, mapped from the tokens above */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: var(--sage);
+  --primary-foreground: var(--sage-ink);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted-foreground: var(--muted);
+  --accent: var(--forest);
+  --accent-foreground: var(--text);
+  --destructive: #f0b4a8;
+  --border: var(--line);
+  --input: var(--line-2);
+  --ring: var(--teal);
+  --radius: 0.25rem;
+}

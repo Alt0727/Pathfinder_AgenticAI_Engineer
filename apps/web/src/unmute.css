@@ -1,0 +1,176 @@
+/*
+  unmute.css
+  Page-wide styles: the teal-glow grid background, heading type, focus ring and
+  the few font helpers. Colours come from styles/tokens.css; fonts load in index.html.
+*/
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  /* A soft teal glow at the top, over a faint 56px grid */
+  background-image:
+    radial-gradient(80% 45% at 50% -10%, rgba(79, 201, 180, 0.13), transparent 70%),
+    linear-gradient(rgba(188, 201, 190, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(188, 201, 190, 0.045) 1px, transparent 1px);
+  background-size: 100% 100vh, 56px 56px, 56px 56px;
+  background-repeat: no-repeat, repeat, repeat;
+}
+
+/* Headings: condensed city-signage type, uppercase */
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: var(--font-head);
+  font-weight: 800;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+
+/* Every focusable control shows the teal ring */
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--sage);
+  color: var(--sage-ink);
+}
+
+/* Monospace for labels, times and countdowns */
+.font-code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The "unmute" wordmark in the nav */
+.font-brand {
+  font-family: var(--font-brand);
+}
+
+/* Small mono label above headings: "YOUR BLOCK · THU 15 OCT" */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Label sitting on a panel's top border: "GROUPS", "YOUR WEEK" */
+.panel-tag {
+  position: absolute;
+  top: -1px;
+  left: 22px;
+  transform: translateY(-50%);
+  padding: 0 8px;
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Static perspective grid with a glowing horizon line (hero and featured carousel) */
+.floor {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  perspective: 320px;
+  perspective-origin: 50% 0;
+}
+.floor::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  right: -60%;
+  height: 240px;
+  transform-origin: 50% 0;
+  transform: rotateX(72deg);
+  background-image:
+    linear-gradient(rgba(79, 201, 180, 0.3) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(79, 201, 180, 0.22) 1.5px, transparent 1.5px);
+  background-size: 64px 32px;
+  background-position: 50% 0;
+}
+.floor::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 4%, rgba(79, 201, 180, 0.8) 32%, #f3efe6 50%, rgba(79, 201, 180, 0.8) 68%, transparent 96%);
+  box-shadow: 0 0 18px 2px rgba(79, 201, 180, 0.4);
+}
+.floor-hero {
+  left: -40px;
+  right: -40px;
+  bottom: 6px;
+  height: 72px;
+  mask-image: linear-gradient(#000, transparent 100%);
+  opacity: 0.9;
+}
+.floor-featured {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46%;
+  perspective: 300px;
+  mask-image: linear-gradient(transparent, #000 30%);
+  opacity: 0.55;
+}
+.floor-featured::before {
+  height: 300px;
+  transform: rotateX(70deg);
+  background-image:
+    linear-gradient(rgba(79, 201, 180, 0.35) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(79, 201, 180, 0.28) 1.5px, transparent 1.5px);
+}
+
+/* Main page arriving after "Loading your city": panels settle in, never more than 8px.
+   Set the start time with --arrive (ms after the page mounts). */
+@keyframes arrive-up {
+  from { opacity: 0; transform: translateY(8px); }
+}
+@keyframes arrive-fade {
+  from { opacity: 0; }
+}
+.arrive-up {
+  animation: arrive-up 300ms cubic-bezier(0.22, 1, 0.36, 1) var(--arrive, 0ms) both;
+}
+.arrive-fade {
+  animation: arrive-fade 240ms cubic-bezier(0.22, 1, 0.36, 1) var(--arrive, 0ms) both;
+}
+
+/* A one-time sage ring on a calendar item that was just added or changed by a plan.
+   Under reduced motion it stays as a static outline (App removes it after 2 s). */
+@keyframes sage-ring {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.sage-ring {
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--sage);
+  border-radius: 6px;
+  pointer-events: none;
+  animation: sage-ring 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

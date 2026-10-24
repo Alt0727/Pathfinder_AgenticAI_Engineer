@@ -1,0 +1,371 @@
+/*
+  landing.css
+  The "Welcome to your city" landing / sign-in scene (landing spec + motion spec §2).
+
+  Every element's default style is its END state. The first-visit intro is a
+  set of animations that only run while .landing has .is-intro, so "Skip intro",
+  Esc, returning visits and reduced motion all land on the same finished scene.
+  The floor (run) and the two glows (drift) are the only continuous motion in the app.
+*/
+
+.landing {
+  position: relative;
+  height: 100svh;
+  min-height: 480px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---------- Layer 1: aurora glows ---------- */
+.landing .aurora span {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  animation: l-drift 26s ease-in-out infinite alternate;
+}
+.landing .aurora span:first-child {
+  top: -24vmax;
+  left: -14vmax;
+  background: radial-gradient(closest-side, rgba(79, 201, 180, 0.16), transparent 72%);
+}
+.landing .aurora span:last-child {
+  bottom: -36vmax;
+  right: -10vmax;
+  background: radial-gradient(closest-side, rgba(242, 138, 60, 0.1), transparent 72%);
+  animation-duration: 34s;
+  animation-direction: alternate-reverse;
+}
+@keyframes l-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5vmax, 3vmax) scale(1.1); }
+  100% { transform: translate(-3vmax, 6vmax) scale(0.95); }
+}
+
+/* ---------- Layer 2: flat grid ---------- */
+.landing .flat-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(90deg, rgba(188, 201, 190, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(188, 201, 190, 0.05) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: radial-gradient(80% 60% at 50% 32%, #000 20%, transparent 78%);
+}
+
+/* ---------- Layer 3: skyline ---------- */
+.landing .skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 42%;
+  height: 15%;
+  width: 100%;
+  opacity: 0.45; /* settled */
+}
+.landing .skyline .bld {
+  fill: none;
+  stroke: rgba(243, 239, 230, 0.55);
+  stroke-width: 1;
+}
+.landing .skyline .edge {
+  stroke: rgba(79, 201, 180, 0.35);
+  stroke-width: 1;
+}
+.landing .skyline .node {
+  fill: var(--teal);
+  opacity: 0.7;
+}
+.landing .skyline .signal,
+.landing .skyline .signal-halo {
+  opacity: 0; /* only visible while the intro moves them */
+}
+.landing .skyline .signal {
+  fill: var(--signal);
+}
+.landing .skyline .signal-halo {
+  fill: none;
+  stroke: var(--signal);
+  stroke-opacity: 0.4;
+}
+
+/* ---------- Layer 4: horizon floor ---------- */
+.landing .horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  perspective: 300px;
+  perspective-origin: 50% 0;
+  overflow: hidden;
+  mask-image: linear-gradient(#000 0%, #000 55%, transparent 100%);
+}
+.landing .horizon-plane {
+  position: absolute;
+  top: 0;
+  left: -60%;
+  right: -60%;
+  height: 260px;
+  transform-origin: 50% 0;
+  transform: rotateX(72deg);
+  background-image:
+    linear-gradient(rgba(79, 201, 180, 0.32) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(79, 201, 180, 0.24) 1.5px, transparent 1.5px);
+  background-size: 64px 32px;
+  background-position: 50% 0;
+  mask-image: linear-gradient(transparent 0%, #000 45%);
+  animation: l-run 1.6s linear infinite;
+}
+@keyframes l-run {
+  from { transform: rotateX(72deg) translateY(-32px); }
+  to { transform: rotateX(72deg) translateY(0); }
+}
+.landing .horizon-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 4%, rgba(79, 201, 180, 0.9) 30%, #fff 50%, rgba(79, 201, 180, 0.9) 70%, transparent 96%);
+  box-shadow: 0 0 18px 2px rgba(79, 201, 180, 0.5);
+}
+.landing .horizon-glow {
+  position: absolute;
+  top: -60px;
+  left: 10%;
+  right: 10%;
+  height: 120px;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(79, 201, 180, 0.22), transparent 75%);
+}
+
+/* Paused while the tab is hidden, stopped while leaving */
+.landing.is-paused .aurora span,
+.landing.is-paused .horizon-plane,
+.landing.is-leaving .aurora span,
+.landing.is-leaving .horizon-plane {
+  animation-play-state: paused;
+}
+
+/* ---------- Top bar ---------- */
+.landing .topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 32px;
+}
+.landing .skip {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  background: rgba(9, 13, 11, 0.5);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+.landing .skip:hover {
+  color: var(--text);
+}
+
+/* ---------- Hero ---------- */
+.landing .hero {
+  position: absolute;
+  top: 10%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+  text-align: center;
+}
+.landing .kicker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  color: var(--teal);
+}
+.landing .kicker::before,
+.landing .kicker::after {
+  content: "";
+  width: 48px;
+  height: 1px;
+  background: rgba(79, 201, 180, 0.6);
+}
+.landing .title {
+  position: relative;
+  margin: 18px 0 0;
+  font-family: var(--font-head);
+  font-weight: 900;
+  text-transform: uppercase;
+  /* the vh term keeps the title clear of the sign-in card on short screens */
+  font-size: clamp(56px, min(10.5vw, 17vh), 168px);
+  line-height: 0.86;
+  letter-spacing: 0.01em;
+}
+.landing .title-1 {
+  display: block;
+  color: var(--text);
+  text-shadow: -2px 0 0 rgba(79, 201, 180, 0.55), 2px 0 0 rgba(242, 138, 60, 0.45), 0 0 40px rgba(79, 201, 180, 0.18);
+}
+.landing .title-2 {
+  display: block;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--text);
+  text-shadow: none;
+}
+.landing .title:focus {
+  outline: none;
+}
+.landing .beam-track {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.landing .beam {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 3px;
+  background: #fff;
+  box-shadow: 0 0 16px 3px rgba(79, 201, 180, 0.8);
+}
+.landing .tagline {
+  margin: 26px 0 0;
+  font-size: clamp(16px, 1.6vw, 20px);
+  color: var(--text-2);
+}
+.landing .tagline em {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--sage);
+}
+
+/* ---------- Cards under the horizon ---------- */
+.landing .slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+}
+.landing .slot-example {
+  top: calc(58% + 8px);
+}
+.landing .slot-signin {
+  top: 72%;
+}
+.landing .slot-signin.is-returning {
+  top: calc(58% + 12px);
+}
+.landing .example {
+  width: 340px;
+  padding: 16px 18px;
+  border: 1px solid rgba(242, 138, 60, 0.45);
+  border-radius: 8px;
+  background: rgba(20, 26, 23, 0.92);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 0 4px rgba(242, 138, 60, 0.06);
+  text-align: left;
+}
+.landing .signin {
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  padding: 28px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: rgba(20, 26, 23, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Leaving: hand over to "Loading your city" ---------- */
+.landing .hero,
+.landing .slot,
+.landing .skyline,
+.landing .topbar {
+  transition: opacity 200ms cubic-bezier(0.4, 0, 1, 1);
+}
+.landing.is-leaving .hero,
+.landing.is-leaving .slot,
+.landing.is-leaving .skyline,
+.landing.is-leaving .topbar {
+  opacity: 0;
+}
+
+/* ---------- First-visit intro (about 4.7 s) ---------- */
+@keyframes l-fade { from { opacity: 0; } }
+@keyframes l-rise-22 { from { opacity: 0; transform: translateY(22px); } }
+@keyframes l-rise-12 { from { opacity: 0; transform: translateY(12px); } }
+@keyframes l-horizon-in { from { opacity: 0; transform: translateY(30%); } }
+@keyframes l-write {
+  from { clip-path: inset(-30% 100% -30% -10%); }
+  to { clip-path: inset(-30% -10% -30% -10%); }
+}
+@keyframes l-beam {
+  0% { transform: translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+@keyframes l-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes l-node { from { opacity: 0; } to { opacity: 0.7; } }
+@keyframes l-settle { from { opacity: 1; } to { opacity: 0.45; } }
+@keyframes l-card-in { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+
+.landing.is-intro .horizon { animation: l-horizon-in 1800ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.landing.is-intro .wordmark { animation: l-fade 600ms 200ms ease-out both; }
+.landing.is-intro .kicker { animation: l-rise-22 1100ms 300ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.landing.is-intro .title { animation: l-write 1350ms 400ms cubic-bezier(0.65, 0, 0.35, 1) both; }
+.landing.is-intro .beam-track { animation: l-beam 1350ms 400ms cubic-bezier(0.65, 0, 0.35, 1) both; }
+.landing.is-intro .tagline { animation: l-rise-12 900ms 1700ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.landing.is-intro .skyline { animation: l-settle 450ms 3500ms ease-out both; }
+.landing.is-intro .skyline .bld {
+  stroke-dasharray: 1;
+  animation: l-draw 900ms var(--d) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.landing.is-intro .skyline .edge {
+  stroke-dasharray: 1;
+  animation: l-draw 600ms var(--d) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.landing.is-intro .skyline .node { animation: l-node 400ms var(--d) ease-out both; }
+.landing.is-intro .example { animation: l-card-in 450ms 3500ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.landing.is-intro .signin { animation: l-rise-12 400ms 4100ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ---------- Responsive (landing spec §7) ---------- */
+@media (max-height: 719px) {
+  .landing .slot-example { display: none; }
+  .landing .slot-signin { top: calc(58% + 12px); }
+}
+@media (max-width: 699px) {
+  .landing .topbar { padding: 16px 20px; }
+  .landing .hero { top: 8%; }
+  .landing .title { font-size: clamp(48px, 15vw, 72px); }
+  .landing .slot-example { top: 54%; }
+  .landing .example { width: 300px; }
+  .landing .slot-signin,
+  .landing .slot-signin.is-returning {
+    top: auto;
+    bottom: 24px;
+  }
+}
+@media (max-height: 559px) {
+  .landing .skyline,
+  .landing .tagline { display: none; }
+}
