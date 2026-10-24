@@ -1,14 +1,15 @@
 import { db } from '../../_shared/supabase.ts'
 
-const ACTIONS = ['added', 'skipped', 'saved']
+const KINDS = ['added', 'skipped', 'saved']
 const UUID = /^[0-9a-f-]{36}$/i
 
-// card.act { card_id, action } → upsert card_actions. This is how the feed learns (get_feed).
+// card.act { card_id, kind } → upsert card_actions. This is how the feed learns (get_feed).
+// (`kind`, not `action`: `action` is the route name in every app-api request body.)
 async function act(p: Record<string, unknown>, ctx: { userId: string }) {
   const cardId = String(p.card_id ?? '')
-  const action = String(p.action ?? '')
+  const action = String(p.kind ?? '')
   if (!UUID.test(cardId)) return { ok: false, error: 'invalid card_id' }
-  if (!ACTIONS.includes(action)) return { ok: false, error: `action must be one of: ${ACTIONS.join(', ')}` }
+  if (!KINDS.includes(action)) return { ok: false, error: `kind must be one of: ${KINDS.join(', ')}` }
 
   const { data: card } = await db.from('cards').select('id').eq('id', cardId).maybeSingle()
   if (!card) return { ok: false, error: 'card not found' }

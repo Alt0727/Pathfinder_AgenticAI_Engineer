@@ -14,7 +14,7 @@ export async function api(action, params = {}) {
     const res = await fetch(URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` },
-      body: JSON.stringify({ action, ...params }),
+      body: JSON.stringify({ ...params, action }),   // route last: a param can never override it
     })
     return await res.json()
   } catch {
