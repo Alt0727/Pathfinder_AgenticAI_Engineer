@@ -23,6 +23,15 @@ export function weekRange() {
   return { from, to: addDays(from, 6) }
 }
 
+// Any ISO time → '2026-10-29T18:00:00+05:30', so the model only ever sees IST. null stays null.
+export function toIST(iso: string | null | undefined): string | null {
+  if (!iso) return null
+  return `${new Date(Date.parse(iso) + 5.5 * 3600_000).toISOString().slice(0, 19)}+05:30`
+}
+
+// '2026-10-24' → 0 (Sunday) … 6 (Saturday), same as day_of_week in the database.
+export const dayOfWeek = (date: string) => new Date(`${date}T00:00:00Z`).getUTCDay()
+
 // '2026-10-24' + '18:30' → '2026-10-24T18:30:00+05:30'
 export const istISO = (date: string, hhmm: string) => `${date}T${hhmm}:00+05:30`
 
