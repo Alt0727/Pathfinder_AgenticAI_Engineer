@@ -17,7 +17,8 @@ import { useSession } from '@/hooks/useSession'
 import { useTimetable } from '@/hooks/useTimetable'
 import { useWeek } from '@/hooks/useWeek'
 import { api } from '@/lib/api'
-import { addDays, dayOfWeek, istISO, todayIST } from '@/lib/time'
+import { toBase64 } from '@/lib/files'
+import { addDays, dayOfWeek, istISO, todayIST } from '@/lib/ist'
 
 // Temporary test page: ✅ D (user id) + app-api actions. Replaced when Medha's screens are wired.
 const tomorrow = addDays(todayIST(), 1)
@@ -104,23 +105,6 @@ function HooksTest({ userId }) {
 }
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-// File → base64 (no "data:" prefix). Photos are downscaled to ≤ 2000 px first (timetable-import spec).
-async function toBase64(file) {
-  if (file.type === 'application/pdf') {
-    const buf = new Uint8Array(await file.arrayBuffer())
-    let bin = ''
-    for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000))
-    return { data: btoa(bin), mime: file.type }
-  }
-  const img = await createImageBitmap(file)
-  const scale = Math.min(1, 2000 / Math.max(img.width, img.height))
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.round(img.width * scale)
-  canvas.height = Math.round(img.height * scale)
-  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
-  return { data: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mime: 'image/jpeg' }
-}
 
 // Temporary timetable import: upload → review (delete rows) → save. Nothing is saved until you click save.
 function TimetableTest() {
@@ -249,7 +233,7 @@ function AgentTest({ userId }) {
   )
 }
 
-function App() {
+function DevPage() {
   const { userId, loading, error } = useSession()
   const [results, setResults] = useState([])
   const [running, setRunning] = useState(false)
@@ -311,4 +295,4 @@ function App() {
   )
 }
 
-export default App
+export default DevPage

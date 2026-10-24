@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { weekRange } from '@/lib/time'
+import { weekRange } from '@/lib/ist'
 import { must, useLive } from '@/hooks/useLive'
 
 // Timetable view: this week's real class times (overrides applied) + the editable weekly slot list.
