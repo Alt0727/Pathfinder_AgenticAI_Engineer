@@ -7,7 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useChat } from '@/hooks/useChat'
+import { useFeed } from '@/hooks/useFeed'
+import { useGroups } from '@/hooks/useGroups'
+import { useQuestions } from '@/hooks/useQuestions'
+import { useRadar } from '@/hooks/useRadar'
+import { useRuns } from '@/hooks/useRuns'
 import { useSession } from '@/hooks/useSession'
+import { useTimetable } from '@/hooks/useTimetable'
+import { useWeek } from '@/hooks/useWeek'
 import { api } from '@/lib/api'
 import { addDays, dayOfWeek, istISO, todayIST } from '@/lib/time'
 
@@ -49,6 +57,49 @@ const TESTS = [
   ['agent actions: not yet', () => api('plan.week'), (r) => r.error === 'not yet'],
   ['reject unknown action', () => api('nope'), (r) => !r.ok],
 ]
+
+// One row per hook: item count + the live data. Changes in the database show up here without a reload.
+function HookRow({ name, hook, items }) {
+  const label = hook.error ? `error: ${hook.error.message}` : hook.loading ? 'loading…' : `${items.length} item(s)`
+  return (
+    <details className="text-sm">
+      <summary className={hook.error ? 'text-destructive' : ''}>{name}: {label}</summary>
+      <pre className="bg-muted mt-1 max-h-64 overflow-auto rounded p-2 text-xs">{JSON.stringify(items, null, 2)}</pre>
+    </details>
+  )
+}
+
+function HooksTest({ userId }) {
+  const groups = useGroups(userId)
+  const feed = useFeed(userId)
+  const radar = useRadar(userId)
+  const week = useWeek(userId)
+  const timetable = useTimetable(userId)
+  const runs = useRuns(userId)
+  const questions = useQuestions(userId)
+  const chat = useChat(userId)
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Data hooks (live)</CardTitle>
+        <CardDescription>Week {week.from} → {week.to}. Insert a row in Supabase and watch the count change.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <HookRow name="useGroups" hook={groups} items={groups.groups} />
+        <HookRow name="useFeed" hook={feed} items={feed.cards} />
+        <HookRow name="useRadar" hook={radar} items={radar.deadlines} />
+        <HookRow name="useWeek (entries)" hook={week} items={week.entries} />
+        <HookRow name="useWeek (timetable clashes)" hook={week} items={week.conflicts.timetable} />
+        <HookRow name="useWeek (plan clashes)" hook={week} items={week.conflicts.plan} />
+        <HookRow name="useTimetable (this week)" hook={timetable} items={timetable.week} />
+        <HookRow name="useTimetable (slots)" hook={timetable} items={timetable.slots} />
+        <HookRow name="useRuns" hook={runs} items={runs.runs} />
+        <HookRow name="useQuestions" hook={questions} items={questions.questions} />
+        <HookRow name="useChat" hook={chat} items={chat.messages} />
+      </CardContent>
+    </Card>
+  )
+}
 
 function App() {
   const { userId, loading, error } = useSession()
@@ -104,6 +155,8 @@ function App() {
           ))}
         </CardContent>
       </Card>
+
+      {userId && <HooksTest userId={userId} />}
     </main>
   )
 }
