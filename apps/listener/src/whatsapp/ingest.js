@@ -25,7 +25,8 @@ function sentAt(msg) {
   return new Date(seconds ? seconds * 1000 : Date.now()).toISOString()
 }
 
-export function createIngest({ config, watchedGroups }) {
+// onIngested: called after each saved message (wakes up AI #1).
+export function createIngest({ config, watchedGroups, onIngested = () => {} }) {
   async function post(row) {
     try {
       const res = await fetch(config.ingestUrl, {
@@ -33,8 +34,10 @@ export function createIngest({ config, watchedGroups }) {
         headers: { 'Content-Type': 'application/json', 'x-ingest-secret': config.ingestSecret },
         body: JSON.stringify(row),
       })
-      if (res.ok) console.log('ingested', row.id)
-      else console.error('ingest rejected', row.id, res.status)
+      if (res.ok) {
+        console.log('ingested', row.id)
+        onIngested()
+      } else console.error('ingest rejected', row.id, res.status)
     } catch (err) {
       console.error('ingest unreachable', row.id, err.message)
     }

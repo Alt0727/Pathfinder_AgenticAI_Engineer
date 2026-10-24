@@ -1,5 +1,6 @@
-// Listener entry: WhatsApp → privacy filter → ingest. (AI #1 is wired in at build step 6.)
+// Listener entry: WhatsApp → privacy filter → ingest → AI #1 (extractor) → fan-out to AI #2.
 import { config } from './config.js'
+import { createExtractor } from './extractor/run.js'
 import { supabase } from './lib/supabase.js'
 import { createIngest } from './whatsapp/ingest.js'
 import { createInvites } from './whatsapp/invites.js'
@@ -9,7 +10,10 @@ const invites = createInvites({ supabase, getSocket })
 await invites.loadWatched()
 invites.subscribe()
 
-const handleMessages = createIngest({ config, watchedGroups: invites.watchedGroups })
+const extractor = createExtractor({ supabase, config })
+extractor.start()
+
+const handleMessages = createIngest({ config, watchedGroups: invites.watchedGroups, onIngested: extractor.notify })
 
 await startSocket({
   onOpen: async () => {
