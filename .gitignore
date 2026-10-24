@@ -1,0 +1,70 @@
+# ---------- dependencies ----------
+node_modules/
+.pnpm-store/
+
+# ---------- secrets & env (only .env.example is allowed) ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+key_stuff*
+key*stuff*
+*secret*.txt
+*keys*.txt
+service-account*.json
+
+# ---------- WhatsApp session (= logged-in account) ----------
+apps/listener/auth/
+auth_info*/
+
+# ---------- Supabase local files ----------
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+supabase/functions/.env
+
+# ---------- builds & caches ----------
+dist/
+build/
+.vite/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# ---------- logs ----------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---------- shell / binaries / executables ----------
+.bash_history
+.bash_profile
+.bashrc
+*.exe
+*.dll
+*.msi
+*.bat
+*.cmd
+*.lnk
+
+# ---------- OS / editor ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# ---------- private planning (kept on the laptop only) ----------
+docs/
+CLAUDE.md
+
+# ---------- archives & scratch ----------
+*.zip
+*.rar
+*.7z
+tmp/
+scratch/
