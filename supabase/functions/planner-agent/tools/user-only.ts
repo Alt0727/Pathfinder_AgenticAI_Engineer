@@ -2,7 +2,7 @@
 // and the handler checks the mode again, so an auto run can never touch the timetable.
 import { db } from '../../_shared/supabase.ts'
 import { dayOfWeek, toIST } from '../../_shared/time.ts'
-import { clashes } from './read.ts'
+import { clashes, freeTimes } from './read.ts'
 import { isDate, isTime, isUuid, MAX_WRITES, text, type Tool } from './index.ts'
 
 export const userOnlyTools: Tool[] = [
@@ -45,7 +45,11 @@ export const userOnlyTools: Tool[] = [
         if (Date.parse(args.ends_at) <= Date.parse(args.starts_at)) return { ok: false, error: 'end must be after start' }
         if (Date.parse(args.starts_at) <= Date.now()) return { ok: false, error: 'starts_at is in the past' }
         const conflicts = await clashes(ctx.userId, args.starts_at, args.ends_at, slot.id)
-        if (conflicts.length) return { ok: false, error: 'the new time clashes', conflicts }
+        if (conflicts.length) {
+          const minutes = Math.round((Date.parse(args.ends_at) - Date.parse(args.starts_at)) / 60_000)
+          const free = await freeTimes(ctx.userId, toIST(args.starts_at)!.slice(0, 10), minutes)
+          return { ok: false, error: 'the new time clashes: pick one of free_times_same_day', conflicts, free_times_same_day: free }
+        }
         row.starts_at = args.starts_at
         row.ends_at = args.ends_at
       }

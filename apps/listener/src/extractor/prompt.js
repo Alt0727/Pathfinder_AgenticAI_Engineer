@@ -19,6 +19,7 @@ DATES:
 - A deadline date with no time, "midnight on X", or "tonight" with no time → 23:59 on that date.
 - A whole-day notice (holiday, "no classes on Monday") has NO times: starts_at and ends_at stay null.
 - ends_at only if an end time or a range is stated. Never invent times, links or venues.
+- deadline_at only if the message states WHEN to act by ("last date", "closes", "register by", "due", "before <date>"). Words like "registered students" or "register" without a date are NOT a deadline: never create a deadline card or deadline_at from them.
 - Output ISO 8601 with +05:30, e.g. 2026-10-29T18:00:00+05:30.
 
 EXISTING CARDS come first (they are listed with ids):
