@@ -16,16 +16,16 @@ import { LandingPage } from "@/components/LandingPage"
 import { LoadingCity } from "@/components/LoadingCity"
 import { signIn } from "@/lib/auth"
 import { LOAD_STEPS, toAppData } from "@/lib/data"
-import { supabase } from "@/lib/supabase"
+import { validSession } from "@/lib/session"
 
 export default function Root() {
   const [stage, setStage] = useState(null) // null (checking) | "landing" | "loading" | "main"
   const [data, setData] = useState(null)
   const [loaderShown, setLoaderShown] = useState(false)
 
-  // Saved session → straight to the loader; none → the landing page with "Sign in →"
+  // A valid saved session → straight to the loader; none (or its user was reset) → the landing page
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    validSession().then((session) => {
       setStage(session ? "loading" : "landing")
       setLoaderShown(Boolean(session))
     })

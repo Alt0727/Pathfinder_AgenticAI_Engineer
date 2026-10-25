@@ -4,13 +4,23 @@ import { supabase } from '@/lib/supabase'
 // would create two anonymous users on the very first visit.
 let pending = null
 
-// Reuse the saved session (supabase-js keeps it in localStorage), else sign in anonymously.
+// The saved session, only if its user still exists on the server. After a full reset (users
+// deleted) the browser still holds the old login: drop it locally so a fresh sign-in can happen.
+export async function validSession() {
+  const { data } = await supabase.auth.getSession()
+  if (!data.session) return null
+  const { error } = await supabase.auth.getUser()   // asks the server, not localStorage
+  if (!error) return data.session
+  await supabase.auth.signOut({ scope: 'local' })
+  return null
+}
+
+// Reuse a valid saved session, else sign in anonymously (a new user, nothing personal stored).
 export function ensureSession() {
   if (!pending) {
     pending = (async () => {
-      const { data, error } = await supabase.auth.getSession()
-      if (error) throw error
-      if (data.session) return data.session
+      const session = await validSession()
+      if (session) return session
 
       const res = await supabase.auth.signInAnonymously()
       if (res.error) throw res.error

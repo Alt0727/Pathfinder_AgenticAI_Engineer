@@ -6,10 +6,11 @@ const LINK = /chat\.whatsapp\.com\/(?:invite\/)?([A-Za-z0-9]{10,})/
 export function createInvites({ supabase, getSocket }) {
   const watchedGroups = new Set()
 
-  // On start: every group we already joined.
+  // Every group we joined (on start, and again whenever invites are deleted, e.g. a demo reset).
   async function loadWatched() {
     const { data, error } = await supabase.from('group_invites').select('group_id').eq('status', 'joined')
     if (error) throw error
+    watchedGroups.clear()
     for (const row of data) if (row.group_id) watchedGroups.add(row.group_id)
   }
 
@@ -77,6 +78,15 @@ export function createInvites({ supabase, getSocket }) {
       .channel('group_invites')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_invites' }, ({ new: row }) => {
         if (row.status === 'pending') joinInvite(row)
+      })
+      // An invite was deleted (its user was reset): stop reading that group until someone adds it again
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'group_invites' }, async () => {
+        try {
+          await loadWatched()
+          console.log(`watching ${watchedGroups.size} group(s)`)
+        } catch (err) {
+          console.error('reload watched groups failed', err.message)
+        }
       })
       .subscribe((status) => console.log(`realtime: ${status}`))
   }
