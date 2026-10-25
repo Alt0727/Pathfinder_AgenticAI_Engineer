@@ -14,14 +14,18 @@ function writeBudget(ctx: Ctx) {
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/
 
+// With no saved avoid_after, a time the agent picks ends by 22:00 (nobody wants a 23:00 "register" task)
+const DEFAULT_AVOID_AFTER = '22:00'
+
 // Auto mode: a time the AGENT picks must respect the user's saved hours (avoid_after / avoid_before).
 // User mode is exempt: there the user is directing the change.
 async function outsideHours(ctx: Ctx, startsAt: string, endsAt: string) {
   if (ctx.mode !== 'auto') return null
   const { data } = await db.from('user_preferences').select('key, value').eq('user_id', ctx.userId).in('key', ['avoid_after', 'avoid_before'])
   const pref = Object.fromEntries((data ?? []).map((p) => [p.key, p.value]))
+  if (!HHMM.test(pref.avoid_after ?? '')) pref.avoid_after = DEFAULT_AVOID_AFTER
   const start = toIST(startsAt)!, end = toIST(endsAt)!
-  const late = HHMM.test(pref.avoid_after ?? '') && (end.slice(11, 16) > pref.avoid_after || end.slice(0, 10) > start.slice(0, 10))
+  const late = end.slice(11, 16) > pref.avoid_after || end.slice(0, 10) > start.slice(0, 10)
   const early = HHMM.test(pref.avoid_before ?? '') && start.slice(11, 16) < pref.avoid_before
   if (late) return { ok: false, error: `ends after ${pref.avoid_after}, the user's avoid_after preference: pick an earlier time or skip it` }
   if (early) return { ok: false, error: `starts before ${pref.avoid_before}, the user's avoid_before preference: pick a later time or skip it` }

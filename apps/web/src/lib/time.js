@@ -69,12 +69,12 @@ export function hoursUntil(isoDate, now) {
   return (new Date(isoDate).getTime() - now) / 3600000
 }
 
-// Deadline items (the orange "D" line) that haven't passed yet, most urgent first.
-// Events and opportunities with a registration date aren't counted here; their
-// dates still show on their own cards.
+// Everything with a deadline that hasn't passed yet, most urgent first: deadline cards, and events /
+// opportunities with a registration or application date (AI #1 often keeps that date on the same card).
+// This is the spec's deadline radar: active cards with a future deadline_at (pass only active items).
 export function upcomingDeadlines(items, now) {
   return items
-    .filter((i) => i.pillar === "deadline" && i.deadline_at && new Date(i.deadline_at).getTime() > now)
+    .filter((i) => i.deadline_at && new Date(i.deadline_at).getTime() > now)
     .sort((a, b) => new Date(a.deadline_at) - new Date(b.deadline_at))
 }
 

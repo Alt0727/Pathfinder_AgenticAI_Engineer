@@ -24,8 +24,11 @@ export async function buildContext(userId: string, trigger: string, payload: Rec
   }
 
   if (trigger === 'card_changed') {
-    const changes = (payload.changes as { card_id: string }[] | undefined) ?? []
-    sections.push(`Changes:\n${JSON.stringify(changes, null, 1)}`)
+    const changes = (payload.changes as { card_id: string; old?: Record<string, unknown>; new?: Record<string, unknown> }[] | undefined) ?? []
+    // AI #1 reports old → new times in UTC; the agent sees every time in IST (+05:30)
+    const inIST = (o: Record<string, unknown> = {}) =>
+      Object.fromEntries(Object.entries(o).map(([k, v]) => [k, k.endsWith('_at') && typeof v === 'string' ? toIST(v) : v]))
+    sections.push(`Changes:\n${JSON.stringify(changes.map((c) => ({ ...c, old: inIST(c.old), new: inIST(c.new) })), null, 1)}`)
     const { data } = await db.from('plan_entries').select('id, title, starts_at, ends_at, placed_by, card_id')
       .eq('user_id', userId).eq('status', 'planned').in('card_id', changes.map((c) => c.card_id))
     sections.push(`Linked plan entries:\n${JSON.stringify((data ?? []).map(ist), null, 1)}`)
