@@ -5,17 +5,25 @@
   (The spec crops the wordmark's bottom with translateY(14%); it's kept whole here.)
 
   Props:
-    team: optional team name (default "Team Pathfinder")
+    team:    optional team name (default "Team Pathfinder")
+    onReset: optional function(), shows a "Reset demo" button (wipes all demo data)
 
   Needs: unmute.css (.eyebrow, .font-display)
 */
-export function Footer({ team = "Team Pathfinder" }) {
+export function Footer({ team = "Team Pathfinder", onReset }) {
   return (
     <footer className="mt-24 overflow-hidden border-t">
       <div className="eyebrow mx-auto flex max-w-[1440px] flex-wrap justify-between gap-3 px-5 pt-8 sm:px-10">
         <span>Mute the groups, not the opportunities.</span>
-        <span>
-          {team} · {new Date().getFullYear()}
+        <span className="flex items-center gap-3">
+          {onReset && (
+            <button onClick={onReset} className="underline-offset-4 hover:text-destructive hover:underline">
+              Reset demo
+            </button>
+          )}
+          <span>
+            {team} · {new Date().getFullYear()}
+          </span>
         </span>
       </div>
       <p

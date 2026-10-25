@@ -6,6 +6,7 @@ import { getUserFromRequest } from '../_shared/auth.ts'
 import { corsHeaders, json } from '../_shared/cors.ts'
 import { agentActions } from './actions/agent.ts'
 import { cardActions } from './actions/cards.ts'
+import { demoActions } from './actions/demo.ts'
 import { entryActions } from './actions/entries.ts'
 import { groupActions } from './actions/groups.ts'
 import { profileActions } from './actions/profile.ts'
@@ -16,7 +17,7 @@ type Handler = (params: Record<string, unknown>, ctx: { userId: string }) => Pro
 
 const ACTIONS: Record<string, Handler> = {
   ...profileActions, ...groupActions, ...cardActions, ...entryActions,
-  ...slotActions, ...timetableActions, ...agentActions,
+  ...slotActions, ...timetableActions, ...agentActions, ...demoActions,
 }
 
 const MAX_BODY = 7_000_000   // a ~5 MB timetable image as base64

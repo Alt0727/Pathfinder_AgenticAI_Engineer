@@ -193,6 +193,15 @@ export default function App({ arriving = false }) {
     return { answer: run.summary ?? "Done.", itemIds: [...new Set(cardIds)] }
   }
 
+  // Demo control: wipe everything (all users, cards), then back to the landing page for a fresh sign-in
+  async function resetDemo() {
+    if (!window.confirm("Reset the demo? This deletes ALL data: every user, timetable, group, card and plan.")) return
+    const r = await api("demo.reset")
+    if (!r.ok) return toast.error(r.error)
+    await supabase.auth.signOut({ scope: "local" })
+    window.location.assign("/")
+  }
+
   const needsInterests = profile.ready && profile.interests.length === 0
 
   return (
@@ -286,7 +295,7 @@ export default function App({ arriving = false }) {
         </div>
       </main>
 
-      <Footer />
+      <Footer onReset={resetDemo} />
 
       {/* Item card, opens from anywhere (a calendar tile is a plan entry: added-ness is its card's) */}
       <ItemDetail
