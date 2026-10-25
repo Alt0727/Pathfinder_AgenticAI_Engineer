@@ -8,18 +8,20 @@ Built in 24 hours for ChronoForge 2026 (Agentic AI track) by **Akshay** (backend
 
 ## The problem
 
-Every college student is in dozens of WhatsApp groups: the class group, clubs, the placement cell, the hostel, the fest team. The important messages (a registration that closes tonight, a workshop on Thursday, a class moved to Friday) are buried under "lol", "good morning" and "is it open book?". So students mute the groups, and then miss the deadlines.
+Every college student is in a pile of WhatsApp groups: the class group, clubs, the placement cell, the hostel, the fest team. The important messages (a registration that closes tonight, a workshop on Thursday, a class moved to Friday) are buried under "lol", "good morning" and "is it open book?". So students mute the groups, and then miss the deadlines.
 
-We asked students (**40 responses**, Google Form *"How many college groups have you muted?"*):
+We asked students (Google Form *"How many college groups have you muted?"*, **40 responses**, all first-years):
 
-<!-- SURVEY: replace the ___ with the numbers from the form (Responses → Summary) -->
-| Question | Answer |
+| Question | What they said |
 |---|---|
-| How many college WhatsApp groups are you part of? | ___ on average |
-| How many of them have you muted? | ___ on average (___ % of their groups) |
-| Time spent each day digging through groups for important updates | ___ |
-| Missed a deadline, registration or opportunity because the message got buried | **___ %** |
-| What they missed | ___ (most common answers) |
+| How many college WhatsApp groups are you part of? | **70 % are in more than 10** (45 % in 11–20, 25 % in 20+) |
+| How many of them have you muted? | **50 % muted most or all of them**; 70 % muted at least half; only 5 % muted none |
+| Time spent each day digging through groups for important updates | **85 % spend 5+ minutes a day**; 43.5 % spend 15–60 minutes |
+| Missed a deadline, registration or opportunity because the message got buried? | **47.5 % yes**, 22.5 % maybe: **7 in 10 aren't sure they haven't** |
+
+What they missed, in their words: *"Last date of registration for events"* · *"Club sign ups, events"* · *"hackathon, garba workshop, merch distribution date"* · *"Many professor talks and lectures"* · *"exam time"* · *"Missed Deregistration deadline. Rs 2400 wasted"*.
+
+So students mute the groups to cope, and then the one message that mattered is buried. unmute reads the groups *for* them.
 
 ## What unmute does
 
