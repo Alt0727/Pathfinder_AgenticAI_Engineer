@@ -4,6 +4,7 @@
 import { readFileSync } from 'fs'
 import { config } from '../src/config.js'
 import { extractBatch } from '../src/extractor/run.js'
+import { modelsUsed } from '../src/lib/gemini.js'
 import { prefilter } from '../src/privacy/prefilter.js'
 import { redact } from '../src/privacy/redact.js'
 
@@ -90,7 +91,10 @@ const relevantDropped = sorted.filter((m) => m.expected.relevant && !prefilter(m
 const chatter = sorted.filter((m) => !m.expected.relevant)
 const chatterDropped = chatter.filter((m) => !prefilter(m.text).keep).length
 
-console.log(`\nAI #1 eval: ${messages.length} labelled messages, model ${config.geminiModel}`)
+// The model(s) that really answered: the fallback steps in when the main model is busy
+const answeredBy = [...modelsUsed].map(([m, n]) => `${m} (${n} batch${n === 1 ? '' : 'es'})`).join(', ')
+console.log(`\nAI #1 eval: ${messages.length} labelled messages`)
+console.log(`model          ${answeredBy || 'none'}${config.geminiFallbackModel ? `  [main: ${config.geminiModel}, fallback: ${config.geminiFallbackModel}]` : ''}`)
 console.log(`prefilter      ${relevantDropped} relevant dropped (must be 0) · ${chatterDropped}/${chatter.length} chatter removed on the laptop`)
 console.log(`relevance      ${pct(relevanceOk, messages.length)}`)
 console.log(`type           ${pct(typeOk, creates)}`)

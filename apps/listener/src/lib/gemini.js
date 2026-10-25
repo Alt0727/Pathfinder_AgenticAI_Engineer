@@ -8,6 +8,9 @@ const RETRYABLE = [429, 500, 503]
 const WAITS_MS = [2000, 5000]
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// Which model actually answered, and how often (the fallback may answer when the main model is busy)
+export const modelsUsed = new Map()
+
 // One structured call: the model must answer with JSON matching `schema` (no free text to parse).
 // Retries twice on overload; the last try uses GEMINI_FALLBACK_MODEL if set.
 export async function generateJSON({ system, prompt, schema }) {
@@ -25,6 +28,7 @@ export async function generateJSON({ system, prompt, schema }) {
           temperature: 0,          // same input → same cards
         },
       })
+      modelsUsed.set(model, (modelsUsed.get(model) ?? 0) + 1)
       return JSON.parse(res.text)
     } catch (err) {
       if (last || !RETRYABLE.includes(err.status)) throw err
