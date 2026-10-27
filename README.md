@@ -1,3 +1,7 @@
+## Hackathon Results
+
+Unmute won the first prize in the agentic AI track of Chronoforge hackathon in Engineer 2026.
+
 # unmute
 
 **An AI agent that reads your campus WhatsApp groups and plans your next 7 days, without storing anyone's personal data.**
@@ -204,3 +208,4 @@ apps/listener/   WhatsApp listener, privacy filter, AI #1, eval (eval/labelled.j
 apps/web/        React app (Medha's UI) · src/lib/adapt.js maps backend rows → UI · src/hooks/ live data · ?dev test page
 supabase/        migrations (schema, RLS, SQL functions, realtime) · functions/{ingest, app-api, planner-agent, _shared} · reset.sql
 ```
+
